@@ -1,1 +1,148 @@
+from google.colab import files
 
+uploaded = files.upload()
+
+# 2. Load the Dataset
+
+import pandas as pd
+
+df = pd.read_csv('symptom_Description.csv')
+
+df.head()
+
+# 3. Data Exploration
+
+df.info()
+
+df.describe(include='all')
+
+df.shape
+
+df.columns
+
+# 4. Check for Missing Values and Duplicates
+
+print(df.isnull().sum())
+
+print("Duplicates:", df.duplicated().sum())
+
+# 5. Visualize a Few Features
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+plt.figure(figsize=(10,5))
+
+sns.countplot(y='Description', data=df)
+
+plt.title('Symptom Descriptions Distribution')
+
+plt.show()
+
+# 6. Identify Target and Features
+
+# Example: Replace 'Disease' with your actual target column name
+
+X = df['Description']
+
+y = df['Disease'] # Uncomment and replace if target exists
+
+#7
+
+for col in df.select_dtypes(include='object').columns:
+
+ df[col] = df[col].astype('category').cat.codes
+
+# 8. One-Hot Encoding
+
+X = pd.get_dummies(X)
+
+# 9. Feature Scaling
+
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+X_scaled = scaler.fit_transform(X)
+
+#10
+
+from sklearn.model_selection import train_test_split
+
+# Replace 'X_scaled' with your actual feature set, and 'y' with your actual target 
+
+variable
+
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, 
+
+random_state=42)
+#11
+
+from sklearn.ensemble import RandomForestClassifier
+
+# Create and train the model
+
+model = RandomForestClassifier(random_state=42)
+
+model.fit(X_train, y_train)
+
+# 12. Evaluation
+
+from sklearn.metrics import accuracy_score, classification_report
+
+# y_pred = model.predict(X_test)
+
+# print("Accuracy:", accuracy_score(y_test, y_pred))
+
+# print(classification_report(y_test, y_pred))
+
+# 13. Make Predictions from New Input
+
+new_input = ['sore throat']
+
+# 14. Convert to DataFrame and Encode
+
+new_df = pd.DataFrame(new_input, columns=['Description'])
+
+new_df_encoded = pd.get_dummies(new_df)
+
+new_df_encoded = new_df_encoded.reindex(columns=X.columns, fill_value=0)
+
+new_scaled = scaler.transform(new_df_encoded)
+
+# 15. Predict the Final GradeGrade
+
+# prediction = model.predict(new_scaled)
+
+# print("Predicted class:", prediction[0])
+
+# 16. Deployment - Building an Interactive App
+
+!pip install gradio
+
+import gradio as gr
+
+# 17. Create a Prediction Function
+def predict_symptom(symptom):
+
+ df_input = pd.DataFrame([symptom], columns=['Description'])
+
+ df_input = pd.get_dummies(df_input)
+
+ df_input = df_input.reindex(columns=X.columns, fill_value=0)
+
+ df_scaled = scaler.transform(df_input)
+
+ pred = model.predict(df_scaled)
+
+ return f"Predicted: {pred[0]}"
+
+# 18. Create the Gradio Interface
+
+interface = gr.Interface(fn=predict_symptom,
+
+ inputs=gr.Textbox(label="Enter Symptom"),
+
+ outputs="text")
+
+interface.launch()
